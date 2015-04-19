@@ -1,0 +1,45 @@
+{
+    "name": "node-fts-search",
+    "description": "Full-text search engine built with Node and SQLite FTS",
+    "version": "0.0.1",
+    "homepage": "http://github.com/hugozhu/node-fts-search",
+    "author": {
+        "name": "Hugo Zhu",
+        "url": "http://hugozhu.myalert.info/"
+    },
+    "binary": {
+    },
+    "contributors": [
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/hugozhu/node-fts-searchgit"
+    },
+    "dependencies": {
+        "segment": "~0.0.6",
+        "connect": "~3.3.5",
+        "sqlite3": "3.0.5 ",
+    },
+    "bundledDependencies": [
+    ],
+    "devDependencies": {
+    },
+    "engines": {
+        "node": ">= 0.10.0 < 0.11.0 || >= 0.11.13 < 0.13.0 || >= 1.0.0 < 2.0.0"
+    },
+    "engineStrict": true,
+    "scripts": {
+    },
+    "licenses": [
+        {
+            "type": "MIT"
+        }
+    ],
+    "keywords": [
+        "sql",
+        "sqlite",
+        "sqlite3",
+        "search"
+    ],
+    "main": "./lib/server"
+}
