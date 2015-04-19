@@ -18,7 +18,7 @@
     "dependencies": {
         "segment": "~0.0.6",
         "connect": "~3.3.5",
-        "sqlite3": "3.0.5 ",
+        "sqlite3": "3.0.5 "
     },
     "bundledDependencies": [
     ],
