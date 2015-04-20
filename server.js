@@ -1,11 +1,9 @@
-var connect = require('connect');
-var http 	= require('http');
-var url  	= require('url');
+"use strict";
+
 var sqlite3 = require('sqlite3').verbose();
 var db 		= new sqlite3.Database('./test.db');
 var Segment = require('segment');
 
-var app = connect();
 var segment = new Segment();
 segment
 	// 识别模块
@@ -31,67 +29,93 @@ segment
 	// .loadDict('names.txt')          // 常见名词、人名
 	.loadDict('wildcard.txt', 'WILDCARD', true)   // 通配符
 
-app.use("/update", function(req, res){
-	var query = url.parse(req.url, true).query;
-	var dict = segment.doSegment(query.content);
+function update(id, content){
+	var dict = segment.doSegment(content);
 	var words = ""
-	for (i in dict) {
+	for (var i in dict) {
 		words = words + " " + dict[i].w;
 	}
-	console.log(query.id, words);
+	console.log(id, words);
 	db.serialize(function() {
 		db.run("CREATE VIRTUAL TABLE IF NOT EXISTS messages USING fts4(content TEXT)");
 		var stmt = db.prepare("REPlACE INTO messages (docid, content) VALUES (?,?)");
-		stmt.run(query.id, words);
+		stmt.run(id, words);
 		stmt.finalize();
 	});
-	res.end('OK');
-})
+	return true;
+}
 
-app.use("/search", function(req, res){
-	var query = url.parse(req.url, true).query;
-	var offset   = parseInt(query.offset, 10);
-	if (isNaN(offset)) {
-		offset = 0;
-	}
-	var keywords = query.keywords;
-	var quoted_keywords = "";
-	var arr = keywords.split(/(\s+)/);
-	for (i in arr) {
-		if (arr[i].trim().length == 0) {
-			continue;
-		}
-		var dict = segment.doSegment(arr[i]);
-		if (dict.length > 1) {
-			quoted_keywords +=' "'
-			for (j in dict) {
-				quoted_keywords += dict[j].w +" ";
+function search(keywords, offset){
+	var offset = offset || 0;
+	var keywords = keywords || '';
+	return new Promise(function(resolve, reject){
+		var quoted_keywords = "";
+		var arr = keywords.split(/(\s+)/);
+		for (var i in arr) {
+			if (arr[i].trim().length == 0) {
+				continue;
 			}
-			quoted_keywords = quoted_keywords.trim()
-			quoted_keywords +='"'
-		} else {
-			quoted_keywords += " "+ arr[i];
+			var dict = segment.doSegment(arr[i]);
+			if (dict.length > 1) {
+				quoted_keywords +=' "'
+				for (var j in dict) {
+					quoted_keywords += dict[j].w +" ";
+				}
+				quoted_keywords = quoted_keywords.trim()
+				quoted_keywords +='"'
+			} else {
+				quoted_keywords += " "+ arr[i];
+			}
 		}
-	}
-	var result = new Object();
-	result.docs = [];
-	var limit = " LIMIT 10 OFFSET " + offset;
-	quoted_keywords = "'"+quoted_keywords.trim()+"'";	
-	var sql = "SELECT docid FROM messages WHERE content MATCH " + quoted_keywords + limit;
-	console.log(sql);
-	db.each(sql, function(err, row) {		
-		if (err) throw err;			
-		result.docs.push(row.docid);
-	}, function(err, num) {
-		res.end(JSON.stringify(result));
-	});	
-})
+		var result = new Object();
+		result.docs = [];
+		var limit = " LIMIT 10 OFFSET " + offset;
+		quoted_keywords = "'"+quoted_keywords.trim()+"'";
+		var sql = "SELECT docid FROM messages WHERE content MATCH " + quoted_keywords + limit;
+		console.log(sql);
+		db.each(sql, function(err, row) {
+			if (err) throw err;
+			result.docs.push(row.docid);
+		}, function(err, num) {
+			resolve(result);
+		});
+	})
+}
 
-app.use("/optimize", function(req, res){
-	db.run("INSERT INTO messages(messages) VALUES('optimize');");
-	res.end('OK');
+//app.use("/optimize", function(req, res){
+//	db.run("INSERT INTO messages(messages) VALUES('optimize');");
+//	res.end('OK');
+//})
+
+function sendMsg(msg){
+	process.send(msg);
+}
+
+process.on('message',function(msg){
+	var mid = msg.mid;
+	var action = msg.action;
+	if(action === 'update'){
+		var respMsg = {
+			"mid":mid,
+			"success":true,
+			"result": update(msg.params.id, msg.params.content)
+		}
+		sendMsg(respMsg);
+	}else if(action === 'search'){
+		search(msg.params.keywords, msg.params.offset).then(function(data){
+			var respMsg = {
+				"mid":mid,
+				"success":true,
+				"result":data
+			}
+			sendMsg(respMsg);
+		},function(errMsg){
+			var respMsg = {
+				"mid":mid,
+				"success":false,
+				"result":errMsg
+			}
+			sendMsg(respMsg);
+		})
+	}
 })
- 
-//create node.js http server and listen on port 
-console.log("Server starting ...");
-http.createServer(app).listen(9000);
