@@ -40,7 +40,7 @@ app.use("/update", function(req, res){
 	}
 	console.log(query.id, words);
 	db.serialize(function() {
-		db.run("CREATE VIRTUAL TABLE IF NOT EXISTS messages USING fts4(content TEXT, TOKENIZE SIMPLE)");
+		db.run("CREATE VIRTUAL TABLE IF NOT EXISTS messages USING fts4(content TEXT)");
 		var stmt = db.prepare("REPlACE INTO messages (docid, content) VALUES (?,?)");
 		stmt.run(query.id, words);
 		stmt.finalize();
