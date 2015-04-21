@@ -1,2 +1,9 @@
-# node_fts_search
-search engine built with Node.JS for desktop full-text search
+# node-fts-search
+
+Full-text search engine built with Node.JS and SQLite FTS for desktop search.
+
+# Installation
+
+```
+npm install
+```
