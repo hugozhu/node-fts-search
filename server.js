@@ -75,7 +75,7 @@ function search(keywords, offset){
 	})
 }
 
-function highlight(content, keywords, opentag, closetag) {
+function highlight(content, keywords, opentag, closetag, maxlength) {
 	var keywords = keywords.trim() || '';
 	var arr = keywords.split(/(\s+)/);
 	for (var i in arr) {
@@ -127,7 +127,11 @@ process.on('message',function(msg){
 		var respMsg = {
 			"mid":mid,
 			"success":true,
-			"result": highlight(msg.params.content, msg.params.keywords, msg.params.opentag, msg.params.closetag)
+			"result": highlight(msg.params.content, 
+				msg.params.keywords, 
+				msg.params.opentag, 
+				msg.params.closetag,
+				msg.maxlength)
 		}
 		sendMsg(respMsg);		
 	}
