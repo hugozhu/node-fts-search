@@ -13,20 +13,13 @@ segment
 	.use('PunctuationTokenizer')    // 标点符号识别
 	.use('ForeignTokenizer')        // 外文字符、数字识别，必须在标点符号识别之后
 	// 中文单词识别
-	.use('SingleTokenizer')           // 词典识别	
-	// .use('DictTokenizer')           // 词典识别
-	// .use('ChsNameTokenizer')        // 人名识别，建议在词典识别之后
+	.use('SingleTokenizer')           // 单字拆分
 
 	// 优化模块
 	.use('EmailOptimizer')          // 邮箱地址识别
-	.use('ChsNameOptimizer')        // 人名识别优化
-	// .use('DictOptimizer')           // 词典识别优化
 	.use('DatetimeOptimizer')       // 日期时间识别优化
 
 	// 字典文件
-	// .loadDict('nodict.txt')           // 盘古词典
-	// .loadDict('dict2.txt')          // 扩展词典（用于调整原盘古词典）
-	// .loadDict('names.txt')          // 常见名词、人名
 	.loadDict('wildcard.txt', 'WILDCARD', true)   // 通配符
 
 function update(id, content){
@@ -35,7 +28,7 @@ function update(id, content){
 	for (var i in dict) {
 		words = words + " " + dict[i].w;
 	}
-	console.log(id, words);
+	console.log('[index]', id, words);
 	db.serialize(function() {
 		db.run("CREATE VIRTUAL TABLE IF NOT EXISTS messages USING fts4(content TEXT)");
 		var stmt = db.prepare("REPlACE INTO messages (docid, content) VALUES (?,?)");
@@ -72,7 +65,7 @@ function search(keywords, offset){
 		var limit = " LIMIT 10 OFFSET " + offset;
 		quoted_keywords = "'"+quoted_keywords.trim()+"'";
 		var sql = "SELECT docid FROM messages WHERE content MATCH " + quoted_keywords + limit;
-		console.log(sql);
+		console.log('[search]', sql);
 		db.each(sql, function(err, row) {
 			if (err) throw err;
 			result.docs.push(row.docid);
