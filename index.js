@@ -52,3 +52,15 @@ exports.search = function(keywords, offset){
         }
     })
 }
+
+exports.highlight = function(content, keywords, opentag, closetag){
+    return sendMsg({
+        action:'highlight',
+        params:{
+            content:content,
+            keywords:keywords,
+            opentag:opentag,
+            closetag:closetag
+        }
+    })
+}

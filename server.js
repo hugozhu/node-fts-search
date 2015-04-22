@@ -40,7 +40,7 @@ function update(id, content){
 
 function search(keywords, offset){
 	var offset = offset || 0;
-	var keywords = keywords || '';
+	var keywords = keywords.trim() || '';
 	return new Promise(function(resolve, reject){
 		var quoted_keywords = "";
 		var arr = keywords.split(/(\s+)/);
@@ -73,6 +73,19 @@ function search(keywords, offset){
 			resolve(result);
 		});
 	})
+}
+
+function highlight(content, keywords, opentag, closetag) {
+	var keywords = keywords.trim() || '';
+	var arr = keywords.split(/(\s+)/);
+	for (var i in arr) {
+		if (arr[i].trim().length == 0) {
+			continue;
+		}
+		var a = new RegExp(arr[i],"g")
+		content = content.replace(a,(opentag + arr[i] + closetag));
+	}
+    return content;
 }
 
 //app.use("/optimize", function(req, res){
@@ -110,5 +123,12 @@ process.on('message',function(msg){
 			}
 			sendMsg(respMsg);
 		})
+	} else if(action === 'highlight'){
+		var respMsg = {
+			"mid":mid,
+			"success":true,
+			"result": highlight(msg.params.content, msg.params.keywords, msg.params.opentag, msg.params.closetag)
+		}
+		sendMsg(respMsg);		
 	}
 })
