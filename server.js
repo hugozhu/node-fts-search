@@ -20,7 +20,7 @@ segment
 	.use('DatetimeOptimizer')       // 日期时间识别优化
 
 	// 字典文件
-	.loadDict('wildcard.txt', 'WILDCARD', true)   // 通配符
+	.loadDict('wildcard.txt', 'WILDCARD', true);  // 通配符
 
 function update(id, content){
 	var dict = segment.doSegment(content);
@@ -78,13 +78,17 @@ function search(keywords, offset){
 function highlight(content, keywords, opentag, closetag, maxlength) {
 	var keywords = keywords.trim() || '';
 	var arr = keywords.split(/(\s+)/);
+	var found = false;
 	for (var i in arr) {
 		if (arr[i].trim().length == 0) {
 			continue;
 		}
 		var a = new RegExp(arr[i],"g")
-		content = content.replace(a,(opentag + arr[i] + closetag));
+		var len = content.length;
+		content = content.replace(a,(0x0001 + arr[i] + 0x0002));
 	}
+	content = content.replace(new RegExp(0x0001, 'g'), opentag);
+	content = content.replace(new RegExp(0x0002, 'g'), closetag);
     return content;
 }
 
