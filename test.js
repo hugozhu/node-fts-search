@@ -20,6 +20,12 @@ describe('#update',function(){
 
 describe('#highlight', function(){
     it('增加高亮显示tag',function(done){
+        search.highlight("Sanduo，明天下午5点一起开会。地点在西溪园区",'地点', '<b>','</b>',5).then(function(data){
+            console.log(data);
+        })
+        search.highlight("Sanduo，明天下午5点一起开会。地点在西溪园区",'地点', '<b>','</b>',30).then(function(data){
+            console.log(data);
+        })
         search.highlight("Sanduo，明天下午5点一起开会。地点在西溪园区",'Sanduo 开会', '<b>','</b>').then(function(data){
             console.log(data);
             done();

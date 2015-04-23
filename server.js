@@ -164,7 +164,7 @@ process.on('message',function(msg){
 				msg.params.keywords, 
 				msg.params.opentag, 
 				msg.params.closetag,
-				msg.maxlength)
+				msg.params.maxlength)
 		}
 		sendMsg(respMsg);		
 	}
