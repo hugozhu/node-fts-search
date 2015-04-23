@@ -7,3 +7,9 @@ Full-text search engine built with Node.JS and SQLite FTS for desktop search.
 ```
 npm install
 ```
+
+# Testing
+
+```
+mocha test.js
+```

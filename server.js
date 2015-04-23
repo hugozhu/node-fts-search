@@ -76,20 +76,49 @@ function search(keywords, offset){
 }
 
 function highlight(content, keywords, opentag, closetag, maxlength) {
+	var len = content.length;
 	var keywords = keywords.trim() || '';
+	maxlength = maxlength || 20;
 	var arr = keywords.split(/(\s+)/);
 	var found = false;
+	var pattern = "(";
 	for (var i in arr) {
-		if (arr[i].trim().length == 0) {
+		arr[i] = arr[i].trim()
+		if (arr[i].length == 0 || arr[i] == '.' || arr[i] == '|' || arr[i] == '*') {
 			continue;
 		}
-		var a = new RegExp(arr[i],"g")
-		var len = content.length;
-		content = content.replace(a,(0x0001 + arr[i] + 0x0002));
+		pattern = pattern + arr[i]+"|";
 	}
-	content = content.replace(new RegExp(0x0001, 'g'), opentag);
-	content = content.replace(new RegExp(0x0002, 'g'), closetag);
-    return content;
+	pattern = pattern.substring(0, pattern.length-1);
+	pattern = pattern +")";	
+	var re  = new RegExp(pattern, 'g');
+	var content2 = content.replace(re, opentag+"$1"+closetag);	
+	if (len <= maxlength) {
+		return content2;
+	}
+	var pos = content2.indexOf(opentag);
+	var start = pos - maxlength / 2;
+	var openstart = false;
+	var openend = false;
+	if (start < 0) {
+		start = 0;
+	} else {
+		openstart = true;
+	}
+	var end = maxlength + start;
+	if (end > len) {
+		end = len;
+	} else {
+		openend = true;
+	}
+	content2 = content.substring(start, end).replace(re, opentag+"$1"+closetag);	
+	if (openstart) {
+		content2 = "..." + content2;
+	}
+	if (openend) {
+		content2 = content2 + "...";
+	} 	
+	return content2;
 }
 
 //app.use("/optimize", function(req, res){
